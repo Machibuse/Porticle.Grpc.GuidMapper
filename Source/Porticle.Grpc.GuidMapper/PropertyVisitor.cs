@@ -4,6 +4,24 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Porticle.Grpc.GuidMapper;
 
+
+public class ClassVisitor : CSharpSyntaxRewriter
+{
+    public override SyntaxNode? VisitClassDeclaration(ClassDeclarationSyntax node)
+    {
+        Console.WriteLine("Visit Class "+node.Identifier.ValueText);
+        var propertyVisitor = new PropertyVisitor();
+        node = (ClassDeclarationSyntax)propertyVisitor.Visit(node);
+
+        
+        Console.WriteLine("Visit Methods for "+propertyVisitor.ReplaceProps.Count+" props");
+        var methodVisitor = new MethodVisitor(propertyVisitor.ReplaceProps);
+        node = (ClassDeclarationSyntax)methodVisitor.Visit(node);
+
+        return node;
+    }
+}
+
 public class PropertyVisitor : CSharpSyntaxRewriter
 {
     public HashSet<PropertyToField> ReplaceProps = new();
@@ -100,8 +118,6 @@ public class PropertyVisitor : CSharpSyntaxRewriter
         }
 
         ReplaceProps.Add(new PropertyToField(property.Identifier.ValueText, identifierNameSyntax.Identifier.ValueText));
-
-        Console.WriteLine($"[Info] Add property replace '{property.Identifier.ValueText}' -> '{identifierNameSyntax.Identifier.ValueText}'");
 
         var newReturnExpression = SyntaxFactory.InvocationExpression(
             SyntaxFactory.ParseExpression("global::System.Guid.Parse"), // Die Methode

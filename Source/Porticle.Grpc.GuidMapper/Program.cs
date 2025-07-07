@@ -30,17 +30,15 @@ foreach (var filename in filenames)
     var root = tree.GetRoot();
     File.WriteAllText(filePath + "_", root.ToFullString());
 
-    var propertyVisitor = new PropertyVisitor();
-    root = propertyVisitor.Visit(root);
+    var classVisitor = new ClassVisitor();
+    root = classVisitor.Visit(root);
 
-    var methodVisitor = new MethodVisitor(propertyVisitor.ReplaceProps);
-    root = methodVisitor.Visit(root);
-
-    // das ganze noch für GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    var options = new CSharpParseOptions();
-    options = options.WithPreprocessorSymbols("GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE");
-    root = CSharpSyntaxTree.ParseText(root.ToFullString(), options).GetRoot();
-    root = methodVisitor.Visit(root);
+    
+    // // das ganze noch für GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    // var options = new CSharpParseOptions();
+    // options = options.WithPreprocessorSymbols("GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE");
+    // root = CSharpSyntaxTree.ParseText(root.ToFullString(), options).GetRoot();
+    // root = methodVisitor.Visit(root);
 
     File.WriteAllText(filePath, root.ToFullString());
     Console.WriteLine("Post-processing complete.");

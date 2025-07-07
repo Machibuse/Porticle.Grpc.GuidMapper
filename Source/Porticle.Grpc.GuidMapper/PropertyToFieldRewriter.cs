@@ -23,7 +23,6 @@ public class PropertyToFieldRewriter : CSharpSyntaxRewriter
 
         if (mapping != null)
         {
-            Console.WriteLine($"[Info] Replace {mapping.PropertyName} with {mapping.FieldName}");
             return SyntaxFactory.IdentifierName(mapping.FieldName).WithTriviaFrom(node);
         }
 
