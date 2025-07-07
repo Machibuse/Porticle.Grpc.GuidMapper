@@ -1,10 +1,17 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Porticle.Grpc.GuidMapper;
 
+// filter out "--" arg 
+args = args.Where(s => s != "--").ToArray();
+
 // Akzeptiert den Dateipfad als Argument
 if (args.Length != 1)
 {
-    Console.WriteLine("Error: Extected exactly 1 arg but got " + args.Length);
+    Console.WriteLine("Error: Expected exactly 1 arg but got " + args.Length);
+    foreach (var arg in args)
+    {
+        Console.WriteLine("Error: arg[..] '"+arg+"'");
+    }
     return;
 }
 

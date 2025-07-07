@@ -2,7 +2,6 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -18,8 +17,9 @@
         <PackageReleaseNotes>First test version</PackageReleaseNotes>
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <DevelopmentDependency>true</DevelopmentDependency>    
-        <Version>1.0.3</Version>
+        <Version>1.0.11</Version>
         <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>        
+        <TargetFrameworks>net9.0;net8.0</TargetFrameworks>        
     </PropertyGroup>
 
     <ItemGroup>
