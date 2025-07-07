@@ -1,0 +1,9 @@
+<Project>
+  <Target Name="RunProtoPostProcessing" AfterTargets="Protobuf_Compile">
+    <ItemGroup>
+        <_FilesToPostProcess Include="%(Protobuf_Compile.CSharpFullPath)" />
+    </ItemGroup>
+
+    <Exec Command="dotnet &quot;$(MSBuildThisFileDirectory)..\..\tools\$(TargetFramework)\Porticle.Grpc.GuidMapper.dll&quot; -- %(_FilesToPostProcess.Identity)" Condition="'@(_FilesToPostProcess)' != ''" />
+  </Target>
+</Project>
