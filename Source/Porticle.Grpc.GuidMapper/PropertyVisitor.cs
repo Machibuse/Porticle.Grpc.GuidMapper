@@ -41,18 +41,18 @@ public class PropertyVisitor : CSharpSyntaxRewriter
 
         if (property.GetLeadingTrivia().ToFullString().Contains("[GrpcGuid]"))
         {
-            return ConcertToGuidProperty(property);
+            return ConvertToGuidProperty(property);
         }
 
         if (property.GetLeadingTrivia().ToFullString().Contains("[NullableString]"))
         {
-            return ConcertToNullableStringProperty(property);
+            return ConvertToNullableStringProperty(property);
         }
 
         return null;
     }
 
-    private PropertyDeclarationSyntax? ConcertToNullableStringProperty(PropertyDeclarationSyntax property)
+    private PropertyDeclarationSyntax? ConvertToNullableStringProperty(PropertyDeclarationSyntax property)
     {
         var setter = property.AccessorList?.Accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.SetAccessorDeclaration));
 
@@ -70,11 +70,19 @@ public class PropertyVisitor : CSharpSyntaxRewriter
             return null;
         }
         
-        // Change property type to string? 
-        return property.WithType(SyntaxFactory.ParseTypeName("global::System.String?").WithTrailingTrivia(SyntaxFactory.Space));
+        var enableDirective = SyntaxFactory.Trivia(SyntaxFactory.NullableDirectiveTrivia(SyntaxFactory.Token(SyntaxKind.EnableKeyword), true));
+        var disableDirective = SyntaxFactory.Trivia(SyntaxFactory.NullableDirectiveTrivia(SyntaxFactory.Token(SyntaxKind.DisableKeyword), true));
+
+        var leadingTrivia = SyntaxFactory.TriviaList(enableDirective, SyntaxFactory.ElasticCarriageReturnLineFeed);
+        var trailingTrivia = SyntaxFactory.TriviaList(SyntaxFactory.ElasticCarriageReturnLineFeed, disableDirective);
+
+        return property
+            .WithType(SyntaxFactory.ParseTypeName("string?").WithTrailingTrivia(SyntaxFactory.ElasticSpace))
+            .WithLeadingTrivia(leadingTrivia.AddRange(property.GetLeadingTrivia()))
+            .WithTrailingTrivia(property.GetTrailingTrivia().AddRange(trailingTrivia));        
     }
 
-    private PropertyDeclarationSyntax? ConcertToGuidProperty(PropertyDeclarationSyntax property)
+    private PropertyDeclarationSyntax? ConvertToGuidProperty(PropertyDeclarationSyntax property)
     {
         var setter = property.AccessorList?.Accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.SetAccessorDeclaration));
 
