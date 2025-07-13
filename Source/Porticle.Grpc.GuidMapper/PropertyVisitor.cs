@@ -39,10 +39,43 @@ public class PropertyVisitor : CSharpSyntaxRewriter
             // dont change anything
             return null;
 
-        if (!property.GetLeadingTrivia().ToFullString().Contains("[GrpcGuid]"))
-            // dont change anything
-            return null;
+        if (property.GetLeadingTrivia().ToFullString().Contains("[GrpcGuid]"))
+        {
+            return ConcertToGuidProperty(property);
+        }
 
+        if (property.GetLeadingTrivia().ToFullString().Contains("[NullableString]"))
+        {
+            return ConcertToNullableStringProperty(property);
+        }
+
+        return null;
+    }
+
+    private PropertyDeclarationSyntax? ConcertToNullableStringProperty(PropertyDeclarationSyntax property)
+    {
+        var setter = property.AccessorList?.Accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.SetAccessorDeclaration));
+
+        if (setter?.Body == null)
+        {
+            Console.WriteLine($"[Error] No setter found in property {property.Identifier}");
+            return null;
+        }
+
+        var isNullable = !setter.Body.ToFullString().Contains("ProtoPreconditions.CheckNotNull");
+
+        if (!isNullable)
+        {
+            Console.WriteLine($"[Error] String property {property.Identifier} ist not nullable");
+            return null;
+        }
+        
+        // Change property type to string? 
+        return property.WithType(SyntaxFactory.ParseTypeName("global::System.String?").WithTrailingTrivia(SyntaxFactory.Space));
+    }
+
+    private PropertyDeclarationSyntax? ConcertToGuidProperty(PropertyDeclarationSyntax property)
+    {
         var setter = property.AccessorList?.Accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.SetAccessorDeclaration));
 
         if (setter?.Body == null)
