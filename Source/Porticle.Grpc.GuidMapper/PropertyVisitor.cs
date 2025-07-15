@@ -4,28 +4,15 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Porticle.Grpc.GuidMapper;
 
-
-public class ClassVisitor : CSharpSyntaxRewriter
-{
-    public override SyntaxNode? VisitClassDeclaration(ClassDeclarationSyntax node)
-    {
-        Console.WriteLine("Visit Class "+node.Identifier.ValueText);
-        var propertyVisitor = new PropertyVisitor();
-        node = (ClassDeclarationSyntax)propertyVisitor.Visit(node);
-
-        
-        Console.WriteLine("Visit Methods for "+propertyVisitor.ReplaceProps.Count+" props");
-        var methodVisitor = new MethodVisitor(propertyVisitor.ReplaceProps);
-        node = (ClassDeclarationSyntax)methodVisitor.Visit(node);
-
-        return node;
-    }
-}
-
 public class PropertyVisitor : CSharpSyntaxRewriter
 {
     public HashSet<PropertyToField> ReplaceProps = new();
 
+    public bool NeedNullableStringConverter { get; set; }
+    public bool NeedNullableGuidConverter { get; set; }
+    public bool NeedGuidConverter { get; set; }
+    
+    
     public override SyntaxNode? VisitPropertyDeclaration(PropertyDeclarationSyntax node)
     {
         var newProperty = CheckProperty(node);
@@ -35,20 +22,120 @@ public class PropertyVisitor : CSharpSyntaxRewriter
 
     private PropertyDeclarationSyntax? CheckProperty(PropertyDeclarationSyntax property)
     {
-        if (property.Type.ToString() != "string")
-            // dont change anything
+        if (property.Type.ToString() == "string")
+        {
+            if (property.GetLeadingTrivia().ToFullString().Contains("[GrpcGuid]"))
+            {
+                return ConvertToGuidProperty(property);
+            }
+
+            if (property.GetLeadingTrivia().ToFullString().Contains("[NullableString]"))
+            {
+                return ConvertToNullableStringProperty(property);
+            }
+
             return null;
-
-        if (property.GetLeadingTrivia().ToFullString().Contains("[GrpcGuid]"))
-        {
-            return ConvertToGuidProperty(property);
         }
-
-        if (property.GetLeadingTrivia().ToFullString().Contains("[NullableString]"))
+        
+        if (property.Type.ToString() == "pbc::RepeatedField<string>")
         {
-            return ConvertToNullableStringProperty(property);
-        }
+            
+            // Manipulate getter 
+            var getter = property.AccessorList?.Accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.GetAccessorDeclaration));
 
+            if (getter?.Body == null)
+            {
+                Console.WriteLine($"[Error] No getter found in property {property.Identifier}");
+                return null;
+            }
+
+            var returnStatement = getter.Body?.Statements.OfType<ReturnStatementSyntax>().FirstOrDefault();
+
+            if (returnStatement?.Expression == null)
+            {
+                Console.WriteLine($"[Error] Getter has no valid return statement in property {property.Identifier}");
+                return null;
+            }
+
+            var originalReturnExpression = returnStatement.Expression;
+
+            var containingClass = property.Ancestors()
+                .OfType<ClassDeclarationSyntax>()
+                .FirstOrDefault();
+            
+            var matchingField = containingClass.Members
+                .OfType<FieldDeclarationSyntax>()
+                .FirstOrDefault(field =>
+                    field.Declaration.Variables.Any(v => v.Identifier.Text == "_repeated_"+originalReturnExpression.ToFullString()+"codec")
+                );
+
+            
+            bool isNullable = matchingField.ToFullString().Contains("ForClassWrapper<string>");
+            
+            Console.WriteLine("isNullable "+isNullable+" "+property.Identifier.ToFullString());
+            
+            if (property.GetLeadingTrivia().ToFullString().Contains("[GrpcGuid]"))
+            {
+                if (isNullable)
+                {
+                    var newReturnExpression = SyntaxFactory.InvocationExpression(
+                        SyntaxFactory.ParseExpression("new RepeatedFieldNullableGuidWrapper"), // Die Methode
+                        SyntaxFactory.ArgumentList(SyntaxFactory.SingletonSeparatedList(SyntaxFactory.Argument(originalReturnExpression))));
+                    var newReturnStatement = returnStatement.WithExpression(newReturnExpression).WithTrailingTrivia(SyntaxFactory.Space);
+                    var newGetterBody = SyntaxFactory.Block(newReturnStatement);
+                    var newGetter = getter.WithBody(newGetterBody.WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed));
+                    property = property.ReplaceNode(getter, newGetter);
+                    return property.WithType(SyntaxFactory.ParseTypeName("System.Collections.Generic.IList<Guid?>").WithTrailingTrivia(SyntaxFactory.ElasticSpace));
+                }
+                else
+                {
+                    var newReturnExpression = SyntaxFactory.InvocationExpression(
+                        SyntaxFactory.ParseExpression("new RepeatedFieldGuidWrapper"), // Die Methode
+                        SyntaxFactory.ArgumentList(SyntaxFactory.SingletonSeparatedList(SyntaxFactory.Argument(originalReturnExpression))));
+                    var newReturnStatement = returnStatement.WithExpression(newReturnExpression).WithTrailingTrivia(SyntaxFactory.Space);
+                    var newGetterBody = SyntaxFactory.Block(newReturnStatement);
+                    var newGetter = getter.WithBody(newGetterBody.WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed));
+                    property = property.ReplaceNode(getter, newGetter);
+                    return property.WithType(SyntaxFactory.ParseTypeName("System.Collections.Generic.IList<Guid>").WithTrailingTrivia(SyntaxFactory.ElasticSpace));
+                }
+            }
+
+            if (property.GetLeadingTrivia().ToFullString().Contains("[NullableString]"))
+            {
+                if (isNullable)
+                {
+                    var newReturnExpression = SyntaxFactory.InvocationExpression(
+                        SyntaxFactory.ParseExpression("new RepeatedFieldNullableStringWrapper"), // Die Methode
+                        SyntaxFactory.ArgumentList(SyntaxFactory.SingletonSeparatedList(SyntaxFactory.Argument(originalReturnExpression))));
+                    var newReturnStatement = returnStatement.WithExpression(newReturnExpression).WithTrailingTrivia(SyntaxFactory.Space);
+                    var newGetterBody = SyntaxFactory.Block(newReturnStatement);
+                    var newGetter = getter.WithBody(newGetterBody.WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed));
+                    property = property.ReplaceNode(getter, newGetter);
+                    return property.WithType(SyntaxFactory.ParseTypeName("System.Collections.Generic.IList<string?>").WithTrailingTrivia(SyntaxFactory.ElasticSpace));
+                }
+            }
+            
+            
+            return null;
+        }
+        
+
+        if (property.Type.ToString() == "string")
+        {
+            if (property.GetLeadingTrivia().ToFullString().Contains("[GrpcGuid]"))
+            {
+                return ConvertToGuidProperty(property);
+            }
+
+            if (property.GetLeadingTrivia().ToFullString().Contains("[NullableString]"))
+            {
+                return ConvertToNullableStringProperty(property);
+            }
+
+            return null;
+        }
+        
+        // dont change anything
         return null;
     }
 
