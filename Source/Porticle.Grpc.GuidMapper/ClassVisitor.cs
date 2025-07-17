@@ -25,9 +25,23 @@ public class ClassVisitor : CSharpSyntaxRewriter
         var propertyVisitor = new PropertyVisitor();
         node = (ClassDeclarationSyntax)propertyVisitor.Visit(node);
 
-        node = node.AddMembers(ClassFromSource(ListWrappers.RepeatedFieldGuidWrapper));
-        node = node.AddMembers(ClassFromSource(ListWrappers.RepeatedFieldNullableGuidWrapper));
-        node = node.AddMembers(ClassFromSource(ListWrappers.RepeatedFieldNullableStringWrapper));
+        if (propertyVisitor.NeedGuidConverter)
+        {
+            node = node.AddMembers(ClassFromSource(ListWrappers.RepeatedFieldGuidWrapper));
+        }
+        
+        if (propertyVisitor.NeedNullableGuidConverter)
+        {
+            node = node.AddMembers(ClassFromSource(ListWrappers.RepeatedFieldNullableGuidWrapper));
+        }
+        
+        if (propertyVisitor.NeedNullableStringConverter)
+        {
+            node = node.AddMembers(ClassFromSource(ListWrappers.RepeatedFieldNullableStringWrapper));
+        }
+        
+        
+        
         
         Console.WriteLine("Visit Methods for "+propertyVisitor.ReplaceProps.Count+" props");
         var methodVisitor = new MethodVisitor(propertyVisitor.ReplaceProps);

@@ -78,6 +78,7 @@ public class PropertyVisitor : CSharpSyntaxRewriter
             {
                 if (isNullable)
                 {
+                    NeedNullableGuidConverter = true;
                     var newReturnExpression = SyntaxFactory.InvocationExpression(
                         SyntaxFactory.ParseExpression("new RepeatedFieldNullableGuidWrapper"), // Die Methode
                         SyntaxFactory.ArgumentList(SyntaxFactory.SingletonSeparatedList(SyntaxFactory.Argument(originalReturnExpression))));
@@ -89,6 +90,7 @@ public class PropertyVisitor : CSharpSyntaxRewriter
                 }
                 else
                 {
+                    NeedGuidConverter = true;
                     var newReturnExpression = SyntaxFactory.InvocationExpression(
                         SyntaxFactory.ParseExpression("new RepeatedFieldGuidWrapper"), // Die Methode
                         SyntaxFactory.ArgumentList(SyntaxFactory.SingletonSeparatedList(SyntaxFactory.Argument(originalReturnExpression))));
@@ -104,6 +106,7 @@ public class PropertyVisitor : CSharpSyntaxRewriter
             {
                 if (isNullable)
                 {
+                    NeedNullableStringConverter = true;
                     var newReturnExpression = SyntaxFactory.InvocationExpression(
                         SyntaxFactory.ParseExpression("new RepeatedFieldNullableStringWrapper"), // Die Methode
                         SyntaxFactory.ArgumentList(SyntaxFactory.SingletonSeparatedList(SyntaxFactory.Argument(originalReturnExpression))));
