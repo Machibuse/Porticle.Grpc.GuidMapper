@@ -1,5 +1,9 @@
 # Porticle.Grpc.GuidMapper
 
+[![Build and Release](https://github.com/Machibuse/Porticle.Grpc.GuidMapper/actions/workflows/release.yaml/badge.svg)](https://github.com/Machibuse/Porticle.CLDR/actions/workflows/release.yaml)  
+
+State on nuget.org [![NuGet Latest Version](https://img.shields.io/nuget/v/Porticle.Grpc.GuidMapper.svg)](https://www.nuget.org/packages/Porticle.Grpc.GuidMapper/)  [![NuGet Downloads](https://img.shields.io/nuget/dt/Porticle.Grpc.GuidMapper.svg)](https://www.nuget.org/packages/Porticle.CLDR.Units/)
+
 A Roslyn-based post-processor for protoc-generated files that adds native Guid, Guid? and string? types in gRPC services.
 
 ## Overview
