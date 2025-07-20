@@ -34,6 +34,6 @@
             <_FilesToPostProcess Include="$(MSBuildProjectDirectory)\%(Protobuf_Compile.OutputDir)\%(Protobuf_Compile.Filename)" />
         </ItemGroup>
         <Message Text="Proto Postprocessing" Importance="high" />
-        <Exec Command="dotnet &quot;$(MSBuildProjectDirectory)\..\Porticle.Grpc.GuidMapper\bin\Debug\$(TargetFramework)\Porticle.Grpc.GuidMapper.dll&quot; -- %(_FilesToPostProcess.Identity)" Condition="'@(_FilesToPostProcess)' != ''" />
+        <Exec Command="dotnet &quot;$(MSBuildProjectDirectory)\..\Porticle.Grpc.GuidMapper\bin\$(Configuration)\$(TargetFramework)\Porticle.Grpc.GuidMapper.dll&quot; -- %(_FilesToPostProcess.Identity)" Condition="'@(_FilesToPostProcess)' != ''" />
     </Target>    
 </Project>
