@@ -25,6 +25,10 @@
         <Protobuf Include="Test.proto"  />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Porticle.Grpc.GuidMapper\Porticle.Grpc.GuidMapper.csproj" />
+    </ItemGroup>
+
     <Target Name="RunProtoPostProcessing" AfterTargets="Protobuf_Compile">
         <ItemGroup>
             <_FilesToPostProcess Include="$(MSBuildProjectDirectory)\%(Protobuf_Compile.OutputDir)\%(Protobuf_Compile.Filename)" />
