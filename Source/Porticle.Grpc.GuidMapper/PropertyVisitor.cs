@@ -8,8 +8,6 @@ public class PropertyVisitor : CSharpSyntaxRewriter
 {
     public HashSet<PropertyToField> ReplaceProps = new();
 
-    public bool NeedNullableStringConverter { get; set; }
-    public bool NeedNullableGuidConverter { get; set; }
     public bool NeedGuidConverter { get; set; }
     
     
@@ -63,14 +61,14 @@ public class PropertyVisitor : CSharpSyntaxRewriter
                 .OfType<ClassDeclarationSyntax>()
                 .FirstOrDefault();
             
-            var matchingField = containingClass.Members
+            
+            var matchingField = containingClass.CheckNotNull("Containing class not found").Members
                 .OfType<FieldDeclarationSyntax>()
                 .FirstOrDefault(field =>
                     field.Declaration.Variables.Any(v => v.Identifier.Text == "_repeated_"+originalReturnExpression.ToFullString()+"codec")
                 );
 
-            
-            bool isNullable = matchingField.ToFullString().Contains("ForClassWrapper<string>");
+            bool isNullable = matchingField.CheckNotNull("Matching field not found").ToFullString().Contains("ForClassWrapper<string>");
             
             Console.WriteLine("isNullable "+isNullable+" "+property.Identifier.ToFullString());
             
@@ -78,15 +76,7 @@ public class PropertyVisitor : CSharpSyntaxRewriter
             {
                 if (isNullable)
                 {
-                    NeedNullableGuidConverter = true;
-                    var newReturnExpression = SyntaxFactory.InvocationExpression(
-                        SyntaxFactory.ParseExpression("new RepeatedFieldNullableGuidWrapper"), // Die Methode
-                        SyntaxFactory.ArgumentList(SyntaxFactory.SingletonSeparatedList(SyntaxFactory.Argument(originalReturnExpression))));
-                    var newReturnStatement = returnStatement.WithExpression(newReturnExpression).WithTrailingTrivia(SyntaxFactory.Space);
-                    var newGetterBody = SyntaxFactory.Block(newReturnStatement);
-                    var newGetter = getter.WithBody(newGetterBody.WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed));
-                    property = property.ReplaceNode(getter, newGetter);
-                    return property.WithType(SyntaxFactory.ParseTypeName("System.Collections.Generic.IList<Guid?>").WithTrailingTrivia(SyntaxFactory.ElasticSpace));
+                    Console.WriteLine("Error: Nullable Guid is not supported for repeated fields because protoc don't allow null for lists");
                 }
                 else
                 {
@@ -106,23 +96,13 @@ public class PropertyVisitor : CSharpSyntaxRewriter
             {
                 if (isNullable)
                 {
-                    NeedNullableStringConverter = true;
-                    var newReturnExpression = SyntaxFactory.InvocationExpression(
-                        SyntaxFactory.ParseExpression("new RepeatedFieldNullableStringWrapper"), // Die Methode
-                        SyntaxFactory.ArgumentList(SyntaxFactory.SingletonSeparatedList(SyntaxFactory.Argument(originalReturnExpression))));
-                    var newReturnStatement = returnStatement.WithExpression(newReturnExpression).WithTrailingTrivia(SyntaxFactory.Space);
-                    var newGetterBody = SyntaxFactory.Block(newReturnStatement);
-                    var newGetter = getter.WithBody(newGetterBody.WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed));
-                    property = property.ReplaceNode(getter, newGetter);
-                    return property.WithType(SyntaxFactory.ParseTypeName("System.Collections.Generic.IList<string?>").WithTrailingTrivia(SyntaxFactory.ElasticSpace));
+                    Console.WriteLine("Error: Nullable string is not supported for repeated fields because protoc don't allow null for lists");
                 }
             }
-            
             
             return null;
         }
         
-
         if (property.Type.ToString() == "string")
         {
             if (property.GetLeadingTrivia().ToFullString().Contains("[GrpcGuid]"))

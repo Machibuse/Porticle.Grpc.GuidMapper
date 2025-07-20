@@ -16,9 +16,14 @@
         <PackageReleaseNotes>First test version</PackageReleaseNotes>
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <DevelopmentDependency>true</DevelopmentDependency>    
-        <Version>1.0.25</Version>
+        <Version>1.0.26</Version>
         <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>        
-        <TargetFrameworks>net9.0;net8.0</TargetFrameworks>        
+        <TargetFrameworks>net9.0;net8.0</TargetFrameworks>
+        <PackageReadmeFile>readme.md</PackageReadmeFile>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <WarningsAsErrors>NU1605</WarningsAsErrors>
+      <NoWarn>1701;1702;NU5119</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -30,10 +35,9 @@
         <None Include="pinky32.png" Pack="True" PackagePath="/" />
     </ItemGroup>
 
+    
     <ItemGroup>
-      <None Include="Porticle.Grpc.GuidMapper.targets" Pack="true" PackagePath="buildTransitive" />
-    </ItemGroup>
-    <ItemGroup>
+      <None Include="..\..\readme.md" Pack="true" PackagePath="\"/>
       <None Include="Porticle.Grpc.GuidMapper.targets" Pack="true" PackagePath="buildTransitive" />
       <None Include="$(OutputPath)**\*" Pack="true" PackagePath="tools\$(TargetFramework)\" />
     </ItemGroup>    

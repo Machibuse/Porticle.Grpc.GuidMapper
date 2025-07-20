@@ -8,13 +8,11 @@ public class ClassVisitor : CSharpSyntaxRewriter
 {
     public override SyntaxNode? VisitClassDeclaration(ClassDeclarationSyntax node)
     {
-        Console.WriteLine("Visit Class "+node.Identifier.ValueText);
         var marker = "[Porticle.Grpc.GuidMapper]";
         
-        // Skip if marker exists
         if (node.GetLeadingTrivia().ToFullString().Contains(marker))
         {
-            Console.WriteLine("Class Already Patched");
+            // Skip if marker exists - class alreqady patched
             return node;
         }
         
@@ -29,20 +27,7 @@ public class ClassVisitor : CSharpSyntaxRewriter
         {
             node = node.AddMembers(ClassFromSource(ListWrappers.RepeatedFieldGuidWrapper));
         }
-        
-        if (propertyVisitor.NeedNullableGuidConverter)
-        {
-            node = node.AddMembers(ClassFromSource(ListWrappers.RepeatedFieldNullableGuidWrapper));
-        }
-        
-        if (propertyVisitor.NeedNullableStringConverter)
-        {
-            node = node.AddMembers(ClassFromSource(ListWrappers.RepeatedFieldNullableStringWrapper));
-        }
-        
-        
-        
-        
+
         Console.WriteLine("Visit Methods for "+propertyVisitor.ReplaceProps.Count+" props");
         var methodVisitor = new MethodVisitor(propertyVisitor.ReplaceProps);
         node = (ClassDeclarationSyntax)methodVisitor.Visit(node);

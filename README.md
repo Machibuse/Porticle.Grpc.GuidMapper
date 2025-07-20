@@ -51,17 +51,17 @@ message User {
   // Guid of the user object   
   string id = 1;
 
-  // Optional reference ID
-  google.protobuf.StringValue optional_reference_id = 4;
-
-  // Name
-  string name = 2;
+  // Optional parent UserId
+  google.protobuf.StringValue optional_parent_user_id = 2;
 
   // Optional description
   google.protobuf.StringValue description = 3;
+
+  // List of roles 
+  repeated string role_ids = 4;
 }
 ```
-Will result in generated code like this
+Will result in generated code like this, everything is a string
 ```csharp
 /// <summary>Guid of the user object</summary>
 public string Id {
@@ -69,22 +69,21 @@ public string Id {
   set { id_ = pb::ProtoPreconditions.CheckNotNull(value, "value"); }
 }
 
-/// <summary>Optional reference ID</summary>
-public string OptionalReferenceId {
-  get { return optionalReferenceId_; }
-  set { optionalReferenceId_ = value; }
+/// <summary>Optional Guid of the parent UserId</summary>
+public string OptionalParentUserId {
+  get { return optionalParentUserId_; }
+  set { optionalParentUserId_ = value; }
 }
 
-/// <summary>Name</summary>
-public string Name {
-  get { return name_; }
-  set { name_ = pb::ProtoPreconditions.CheckNotNull(value, "value"); }
-}
-
-/// <summary>Optional description</summary>
+/// <summary>Optional description string</summary>
 public string Description {
   get { return description_; }
   set { description_ = value; }
+}
+
+/// <summary>List of roles</summary>
+public pbc::RepeatedField<string> RoleIds {
+  get { return roleIds_; }
 }
 ```
 
@@ -98,41 +97,48 @@ message User {
   // [GrpcGuid] Guid of the user object   
   string id = 1;
 
-  // [GrpcGuid] Optional reference ID
-  google.protobuf.StringValue optional_reference_id = 4;
+  // [GrpcGuid] Optional Guid of the parent UserId
+  google.protobuf.StringValue optional_parent_user_id = 2;
 
-  // Name
-  string name = 2;
-
-  // [NullableString] Optional description
+  // [NullableString] Optional description string
   google.protobuf.StringValue description = 3;
+
+  // [GrpcGuid] List of roles 
+  repeated string role_ids = 4;
 }
 ```
-Will result in generated code like this
+Will result in generated code like this, using string? Guid and Guid?
 ```csharp
 /// <summary>[GrpcGuid] Guid of the user object</summary>
 public global::System.Guid Id {
-  get {return global::System.Guid.Parse(id_); }
+  get { return global::System.Guid.Parse(id_); }
   set { id_ = (value).ToString("D"); }
 }
 
-/// <summary>[GrpcGuid] Optional reference ID</summary>
-public global::System.Guid? OptionalReferenceId {
-  get {if(optionalReferenceId_==null)return default; return global::System.Guid.Parse(optionalReferenceId_); }
-  set { optionalReferenceId_ = (value)?.ToString("D"); }
+/// <summary>[GrpcGuid] Optional Guid of the parent UserId</summary>
+public global::System.Guid? OptionalParentUserId {
+  get { if(optionalParentUserId_==null) return default; return global::System.Guid.Parse(optionalParentUserId_); }
+  set { optionalParentUserId_ = (value)?.ToString("D"); }
 }
 
-/// <summary>Name</summary>
-public string Name {
-  get { return name_; }
-  set { name_ = pb::ProtoPreconditions.CheckNotNull(value, "value"); }
-}
 
 #nullable enable
-/// <summary>[NullableString] Optional description</summary>
+/// <summary>[NullableString] Optional description string</summary>
 public string? Description {
   get { return description_; }
   set { description_ = value; }
 }
 #nullable disable
+
+/// <summary>[GrpcGuid] List of roles</summary>
+public IList<Guid> RoleIds {
+  get {return new RepeatedFieldGuidWrapper(roleIds_); }
+}
 ```
+
+## What currently is not Possible?
+
+- Mapping `repeated google.protobuf.StringValue` to `List<Guid?>` or `List<string?>` because grpc internally uses `RepeatedField<string>` instead of `RepeatedField<StringValue>`.
+  This may be a bug in protoc compiler, because it is also not possible to add `null` to `repeated google.protobuf.StringValue` because ther is a not null check in the Add function in `RepeatedField<T>`
+
+- This Tool actually don't works when protoc / Grpc.Tools is compiled with GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE

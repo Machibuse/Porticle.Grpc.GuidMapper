@@ -30,6 +30,9 @@ jobs:
       - name: Build project
         run: dotnet build Source/Porticle.Grpc.sln --configuration Release --no-restore
 
+      - name: Run tests
+        run: dotnet test Source/Porticle.Grpc.UnitTests/Porticle.Grpc.UnitTests.csproj --configuration Release --no-build --verbosity normal
+
       - name: Pack NuGet package
         run: dotnet pack Source/Porticle.Grpc.GuidMapper/Porticle.Grpc.GuidMapper.csproj --configuration Release --no-build --output ./nuget --property:PackageVersion=${{ env.VERSION }}
 
