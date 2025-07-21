@@ -25,5 +25,15 @@ message TestMessageMapped {
   // [GrpcGuid]
   repeated string list_of_guid = 5;
 
-  
+  TestEnum enum_required = 6;
+
+  // [NullableEnum]
+  optional TestEnum enum_optional = 7;
+}
+
+
+enum TestEnum
+{
+  FOO = 0;
+  BAR = 1;
 }

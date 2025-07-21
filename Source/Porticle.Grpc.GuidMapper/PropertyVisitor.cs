@@ -102,23 +102,39 @@ public class PropertyVisitor : CSharpSyntaxRewriter
             
             return null;
         }
-        
-        if (property.Type.ToString() == "string")
+
+        if (property.GetLeadingTrivia().ToFullString().Contains("[NullableEnum]"))
         {
-            if (property.GetLeadingTrivia().ToFullString().Contains("[GrpcGuid]"))
-            {
-                return ConvertToGuidProperty(property);
-            }
-
-            if (property.GetLeadingTrivia().ToFullString().Contains("[NullableString]"))
-            {
-                return ConvertToNullableStringProperty(property);
-            }
-
-            return null;
+            return ConvertOptionalToNullableEnum(property);
         }
         
+        
+        
         // dont change anything
+        return null;
+    }
+
+    private PropertyDeclarationSyntax? ConvertOptionalToNullableEnum(PropertyDeclarationSyntax property)
+    {
+        var setter = property.GetSetter();
+        
+        var getter = property.GetGetter();
+        
+        AssignmentExpressionSyntax[] assignment = setter.Body!.Statements
+            .OfType<ExpressionStatementSyntax>()
+            .Select(s => (s.Expression as AssignmentExpressionSyntax)!)
+            .ToArray();
+
+        if (assignment.Length != 2)
+        {
+            throw new TypeMapperException("Exactly 2 Assignment expressions expected in optional setter");
+        }
+
+        var hasBitsAssignment = assignment[0];
+        var setValueAssignment = assignment[0];
+        
+        
+
         return null;
     }
 
@@ -154,9 +170,9 @@ public class PropertyVisitor : CSharpSyntaxRewriter
 
     private PropertyDeclarationSyntax? ConvertToGuidProperty(PropertyDeclarationSyntax property)
     {
-        var setter = property.AccessorList?.Accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.SetAccessorDeclaration));
+        var setter = property.GetSetter();
 
-        if (setter?.Body == null)
+        if (setter.Body == null)
         {
             Console.WriteLine($"[Error] No setter found in property {property.Identifier}");
             return null;
@@ -165,16 +181,7 @@ public class PropertyVisitor : CSharpSyntaxRewriter
         var isNullable = !setter.Body.ToFullString().Contains("ProtoPreconditions.CheckNotNull");
 
         // Manipulate setter 
-        var assignment = setter.Body.Statements
-            .OfType<ExpressionStatementSyntax>()
-            .Select(s => s.Expression as AssignmentExpressionSyntax)
-            .FirstOrDefault();
-
-        if (assignment == null)
-        {
-            Console.WriteLine($"[Error] Setter has no valid assignment expression in property {property.Identifier}");
-            return null;
-        }
+        var assignment = GetAssignmentExpression(setter);
 
         var originalRightHandSide = assignment.Right;
 
@@ -182,8 +189,7 @@ public class PropertyVisitor : CSharpSyntaxRewriter
         {
             if (originalRightHandSide is not InvocationExpressionSyntax invocationExpr || !invocationExpr.Expression.ToString().EndsWith("CheckNotNull"))
             {
-                Console.WriteLine($"[Error] Can't find CheckNotNull call in setter od property {property.Identifier}");
-                return null;
+                throw new TypeMapperException($"[Error] Can't find CheckNotNull call in setter od property {property.Identifier}");
             }
 
             originalRightHandSide = invocationExpr.ArgumentList.Arguments.First().Expression;
@@ -195,16 +201,15 @@ public class PropertyVisitor : CSharpSyntaxRewriter
         var parenthesizedoriginalRightHandSide = SyntaxFactory.ParenthesizedExpression(originalRightHandSide);
 
         ExpressionSyntax newRightHandSide = isNullable
-            ? SyntaxFactory.ConditionalAccessExpression(parenthesizedoriginalRightHandSide,
-                SyntaxFactory.InvocationExpression(SyntaxFactory.MemberBindingExpression(toStringMethodName), toStringArgumentList))
-            : SyntaxFactory.InvocationExpression(
-                SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, parenthesizedoriginalRightHandSide, toStringMethodName), toStringArgumentList);
+            ? SyntaxFactory.ConditionalAccessExpression(parenthesizedoriginalRightHandSide, SyntaxFactory.InvocationExpression(SyntaxFactory.MemberBindingExpression(toStringMethodName), toStringArgumentList))
+            : SyntaxFactory.InvocationExpression(SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, parenthesizedoriginalRightHandSide, toStringMethodName), toStringArgumentList);
         var newAssignment = assignment.WithRight(newRightHandSide);
         var newSetter = setter.ReplaceNode(assignment, newAssignment);
+
         property = property.ReplaceNode(setter, newSetter);
 
         // Manipulate getter 
-        var getter = property.AccessorList?.Accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.GetAccessorDeclaration));
+        var getter = property.GetGetter();
 
         if (getter?.Body == null)
         {
@@ -263,5 +268,20 @@ public class PropertyVisitor : CSharpSyntaxRewriter
             property = property.WithType(SyntaxFactory.ParseTypeName("global::System.Guid").WithTrailingTrivia(SyntaxFactory.Space));
 
         return property;
+    }
+
+    private static AssignmentExpressionSyntax GetAssignmentExpression(AccessorDeclarationSyntax setter)
+    {
+        var assignment = setter.Body.Statements
+            .OfType<ExpressionStatementSyntax>()
+            .Select(s => s.Expression as AssignmentExpressionSyntax)
+            .FirstOrDefault();
+        
+        if (assignment == null)
+        {
+            throw new TypeMapperException($"Setter has no valid assignment expression");
+        }
+        
+        return assignment;
     }
 }
