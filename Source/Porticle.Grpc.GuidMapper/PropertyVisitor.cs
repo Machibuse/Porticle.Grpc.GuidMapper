@@ -130,10 +130,23 @@ public class PropertyVisitor : CSharpSyntaxRewriter
             throw new TypeMapperException("Exactly 2 Assignment expressions expected in optional setter");
         }
 
-        var hasBitsAssignment = assignment[0];
+        var setBitAssignment = assignment[0];
         var setValueAssignment = assignment[0];
         
-        
+        // Erzeuge neuen Ausdruck: <setBitAssignment.left> &= ~<setBitAssignment.right>
+        var deleteBitAssignment = SyntaxFactory.AssignmentExpression(
+            SyntaxKind.AndAssignmentExpression,
+            setBitAssignment.Left,
+            SyntaxFactory.PrefixUnaryExpression(
+                SyntaxKind.BitwiseNotExpression,
+                setBitAssignment.Right.WithoutTrivia()
+            )
+        ).WithTriviaFrom(setBitAssignment);
+
+        string defaultValueIdentifierName = "DefaultValue";
+
+        // Erzeuge neue Zuweisung: enumOptional_ = <defaultValueIdentifierName>
+        var setDefaultValueAssignment = setValueAssignment.WithRight(SyntaxFactory.IdentifierName(defaultValueIdentifierName));        
 
         return null;
     }
