@@ -23,14 +23,11 @@ public class MethodVisitor : CSharpSyntaxRewriter
         "MergeFrom",
         "InternalMergeFrom"
     ];
-    
+
     public override SyntaxNode? VisitMethodDeclaration(MethodDeclarationSyntax node)
     {
-        if (!ReplaceMethods.Contains(node.Identifier.ValueText.Trim()))
-        {
-            return base.VisitMethodDeclaration(node);
-        }
-        
+        if (!ReplaceMethods.Contains(node.Identifier.ValueText.Trim())) return base.VisitMethodDeclaration(node);
+
         var propertyToFieldRewriter = new PropertyToFieldRewriter(ReplaceProps);
 
         var newBody = (BlockSyntax?)propertyToFieldRewriter.Visit(node.Body);

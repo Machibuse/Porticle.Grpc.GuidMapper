@@ -8,10 +8,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Google.Protobuf" Version="3.31.1" />
+        <PackageReference Include="Google.Protobuf" Version="3.31.1"/>
         <PackageReference Include="Grpc.Tools" Version="2.72.0">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0"/>
         <PackageReference Include="MSTest" Version="3.6.4"/>
@@ -22,18 +22,19 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Protobuf Include="Test.proto"  />
+        <Protobuf Include="Test.proto"/>
+        <Protobuf Include="TestEnumProto.proto" GrpcServices="Both"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Porticle.Grpc.GuidMapper\Porticle.Grpc.GuidMapper.csproj" />
+        <ProjectReference Include="..\Porticle.Grpc.GuidMapper\Porticle.Grpc.GuidMapper.csproj"/>
     </ItemGroup>
 
     <Target Name="RunProtoPostProcessing" AfterTargets="Protobuf_Compile">
         <ItemGroup>
-            <_FilesToPostProcess Include="$(MSBuildProjectDirectory)\%(Protobuf_Compile.OutputDir)\%(Protobuf_Compile.Filename)" />
+            <_FilesToPostProcess Include="$(MSBuildProjectDirectory)\%(Protobuf_Compile.OutputDir)\%(Protobuf_Compile.Filename)"/>
         </ItemGroup>
-        <Message Text="Proto Postprocessing" Importance="high" />
-        <Exec Command="dotnet &quot;$(MSBuildProjectDirectory)/../Porticle.Grpc.GuidMapper/bin/$(Configuration)/$(TargetFramework)/Porticle.Grpc.GuidMapper.dll&quot; -- %(_FilesToPostProcess.Identity)" Condition="'@(_FilesToPostProcess)' != ''" />
-    </Target>    
+        <Message Text="Proto Postprocessing" Importance="high"/>
+        <Exec Command="dotnet &quot;$(MSBuildProjectDirectory)/../Porticle.Grpc.GuidMapper/bin/$(Configuration)/$(TargetFramework)/Porticle.Grpc.GuidMapper.dll&quot; -- %(_FilesToPostProcess.Identity)" Condition="'@(_FilesToPostProcess)' != ''"/>
+    </Target>
 </Project>

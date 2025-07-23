@@ -4,9 +4,9 @@ A Roslyn-based post-processor for protoc-generated files that adds native Guid, 
 
 ## Build State
 
-[![Build and Release](https://github.com/Machibuse/Porticle.Grpc.GuidMapper/actions/workflows/release.yaml/badge.svg)](https://github.com/Machibuse/Porticle.CLDR/actions/workflows/release.yaml)  
+[![Build and Release](https://github.com/Machibuse/Porticle.Grpc.GuidMapper/actions/workflows/release.yaml/badge.svg)](https://github.com/Machibuse/Porticle.CLDR/actions/workflows/release.yaml)
 
-## Nuget 
+## Nuget
 
 [![NuGet Latest Version](https://img.shields.io/nuget/v/Porticle.Grpc.GuidMapper.svg)](https://www.nuget.org/packages/Porticle.Grpc.GuidMapper/)  [![NuGet Downloads](https://img.shields.io/nuget/dt/Porticle.Grpc.GuidMapper.svg)](https://www.nuget.org/packages/Porticle.CLDR.Units/)
 
@@ -19,6 +19,7 @@ code.
 ## Installation
 
 ### Install the package via NuGet:
+
 ```powershell
 dotnet add package Porticle.Grpc.GuidMapper
 ```
@@ -37,19 +38,20 @@ After installing the Package, this Post build step ist dynamically added to your
 </Project>
 ```
 
-Dont wonder ist you cant se it in your csproj file. It is dynamically added when your build is processed.  
+Dont wonder ist you cant se it in your csproj file. It is dynamically added when your build is processed.
 
 ## Usage
 
 There are three things you can do in your .proto files:
+
 - Add `// [GrpcGuid]` as comment to a string field - Converts the corresponding c# string property to Guid
 - Add `// [GrpcGuid]` as comment to a StringValue field - Converts the corresponding c# string property to Guid?
 - Add `// [NullableString]` as comment to a StringValue field - Converts the corresponding c# string property to string?
 
-
 First an Example of a default .proto file
 
 ### Without GuidMapper
+
 ```protobuf
 syntax = "proto3";
 
@@ -69,7 +71,9 @@ message User {
   repeated string role_ids = 4;
 }
 ```
+
 Will result in generated code like this, everything is a string
+
 ```csharp
 /// <summary>Guid of the user object</summary>
 public string Id {
@@ -96,6 +100,7 @@ public pbc::RepeatedField<string> RoleIds {
 ```
 
 ### With GuidMapper
+
 ```protobuf
 syntax = "proto3";
 
@@ -115,7 +120,9 @@ message User {
   repeated string role_ids = 4;
 }
 ```
+
 Will result in generated code like this, using string? Guid and Guid?
+
 ```csharp
 /// <summary>[GrpcGuid] Guid of the user object</summary>
 public global::System.Guid Id {

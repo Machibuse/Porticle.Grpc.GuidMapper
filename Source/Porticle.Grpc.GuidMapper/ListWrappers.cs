@@ -2,9 +2,80 @@
 
 public static class ListWrappers
 {
-    public static string RepeatedFieldGuidWrapper = "class RepeatedFieldGuidWrapper : System.Collections.Generic.IList<System.Guid>\n{\n    private readonly Google.Protobuf.Collections.RepeatedField<string> _internList;\n\n    public RepeatedFieldGuidWrapper(Google.Protobuf.Collections.RepeatedField<string> internList)\n    {\n        this._internList = internList;\n    }\n\n    public System.Collections.Generic.IEnumerator<System.Guid> GetEnumerator()\n    {\n        using var enumerator = _internList.GetEnumerator();\n        while (enumerator.MoveNext())\n        {\n            yield return System.Guid.Parse(enumerator.Current);\n        }\n    }\n\n    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()\n    {\n        return GetEnumerator();\n    }\n\n    public void Add(System.Guid item)\n    {\n        _internList.Add(item.ToString(\"D\"));\n    }\n\n    public void Clear()\n    {\n        _internList.Clear();\n    }\n\n    public bool Contains(System.Guid item)\n    {\n        return _internList.Contains(item.ToString(\"D\"));\n    }\n\n    public void CopyTo(System.Guid[] array, int arrayIndex)\n    {\n        System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Select(_internList, System.Guid.Parse)).CopyTo(array, arrayIndex);\n    }\n\n    public bool Remove(System.Guid item)\n    {\n        return _internList.Remove(item.ToString(\"D\"));\n    }\n\n    public int Count => _internList.Count;\n    \n    public bool IsReadOnly => _internList.IsReadOnly;\n    \n    public int IndexOf(System.Guid item)\n    {\n        return _internList.IndexOf(item.ToString(\"D\"));\n    }\n\n    public void Insert(int index, System.Guid item)\n    {\n        _internList.Insert(index, item.ToString(\"D\"));\n    }\n\n    public void RemoveAt(int index)\n    {\n        _internList.RemoveAt(index);\n    }\n\n    public System.Guid this[int index]\n    {\n        get =>  System.Guid.Parse(_internList[index]);\n        set => _internList[index] = value.ToString(\"D\");\n    }\n}";
-    
-    // not used, because it cant work because of a bug in grpc code generation
-    //// public static string RepeatedFieldNullableGuidWrapper = "class RepeatedFieldNullableGuidWrapper : System.Collections.Generic.IList<System.Guid?>\n{\n    private readonly Google.Protobuf.Collections.RepeatedField<string> _internList;\n\n    public RepeatedFieldNullableGuidWrapper(Google.Protobuf.Collections.RepeatedField<string> internList)\n    {\n        this._internList = internList;\n    }\n\n    public System.Collections.Generic.IEnumerator<System.Guid?> GetEnumerator()\n    {\n        using var enumerator = _internList.GetEnumerator();\n        while (enumerator.MoveNext())\n        {\n            yield return string.IsNullOrWhiteSpace(enumerator.Current) ? null : System.Guid.Parse(enumerator.Current);\n        }\n    }\n\n    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()\n    {\n        return GetEnumerator();\n    }\n\n    public void Add(System.Guid? item)\n    {\n        _internList.Add(item?.ToString(\"D\")!);\n    }\n\n    public void Clear()\n    {\n        _internList.Clear();\n    }\n\n    public bool Contains(System.Guid? item)\n    {\n        return _internList.Contains(item?.ToString(\"D\")!);\n    }\n\n    public void CopyTo(System.Guid?[] array, int arrayIndex)\n    {\n        System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Select(_internList, s => string.IsNullOrWhiteSpace(s) ? null : (System.Guid?)System.Guid.Parse(s!))).CopyTo(array, arrayIndex);\n    }\n\n    public bool Remove(System.Guid? item)\n    {\n        return _internList.Remove(item?.ToString(\"D\")!);\n    }\n\n    public int Count => _internList.Count;\n    \n    public bool IsReadOnly => _internList.IsReadOnly;\n    \n    public int IndexOf(System.Guid? item)\n    {\n        return _internList.IndexOf(item?.ToString(\"D\")!);\n    }\n\n    public void Insert(int index, System.Guid? item)\n    {\n        _internList.Insert(index, item?.ToString(\"D\")!);\n    }\n\n    public void RemoveAt(int index)\n    {\n        _internList.RemoveAt(index);\n    }\n\n    public System.Guid? this[int index]\n    {\n        get =>  string.IsNullOrWhiteSpace(_internList[index])?null : System.Guid.Parse(_internList[index]);\n        set => _internList[index] = value?.ToString(\"D\")!;\n    }\n}";
-    //// public static string RepeatedFieldNullableStringWrapper = "class RepeatedFieldNullableStringWrapper : System.Collections.Generic.IList<string?>\n{\n    private readonly Google.Protobuf.Collections.RepeatedField<string> _internList;\n\n    public RepeatedFieldNullableStringWrapper(Google.Protobuf.Collections.RepeatedField<string> internList)\n    {\n        this._internList = internList;\n    }\n\n    public System.Collections.Generic.IEnumerator<string?> GetEnumerator()\n    {\n        using var enumerator = _internList.GetEnumerator();\n        while (enumerator.MoveNext())\n        {\n            yield return enumerator.Current;\n        }\n    }\n\n    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()\n    {\n        return GetEnumerator();\n    }\n\n    public void Add(string? item)\n    {\n        _internList.Add(item!);\n    }\n\n    public void Clear()\n    {\n        _internList.Clear();\n    }\n\n    public bool Contains(string? item)\n    {\n        return _internList.Contains(item!);\n    }\n\n    public void CopyTo(string?[] array, int arrayIndex)\n    {\n        System.Linq.Enumerable.ToArray(_internList).CopyTo(array, arrayIndex);\n    }\n\n    public bool Remove(string? item)\n    {\n        return _internList.Remove(item!);\n    }\n\n    public int Count => _internList.Count;\n    \n    public bool IsReadOnly => _internList.IsReadOnly;\n    \n    public int IndexOf(string? item)\n    {\n        return _internList.IndexOf(item!);\n    }\n\n    public void Insert(int index, string? item)\n    {\n        _internList.Insert(index, item!);\n    }\n\n    public void RemoveAt(int index)\n    {\n        _internList.RemoveAt(index);\n    }\n\n    public string? this[int index]\n    {\n        get =>  _internList[index];\n        set => _internList[index] = value!;\n    }\n}";
+    public static string RepeatedFieldGuidWrapper =
+        """
+        class RepeatedFieldGuidWrapper : System.Collections.Generic.IList<System.Guid>
+        {
+            private readonly Google.Protobuf.Collections.RepeatedField<string> _internList;
+
+            public RepeatedFieldGuidWrapper(Google.Protobuf.Collections.RepeatedField<string> internList)
+            {
+                this._internList = internList;
+            }
+
+            public System.Collections.Generic.IEnumerator<System.Guid> GetEnumerator()
+            {
+                using var enumerator = _internList.GetEnumerator();
+                while (enumerator.MoveNext())
+                {
+                    yield return System.Guid.Parse(enumerator.Current);
+                }
+            }
+
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+
+            public void Add(System.Guid item)
+            {
+                _internList.Add(item.ToString("D"));
+            }
+
+            public void Clear()
+            {
+                _internList.Clear();
+            }
+
+            public bool Contains(System.Guid item)
+            {
+                return _internList.Contains(item.ToString("D"));
+            }
+
+            public void CopyTo(System.Guid[] array, int arrayIndex)
+            {
+                System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Select(_internList, System.Guid.Parse)).CopyTo(array, arrayIndex);
+            }
+
+            public bool Remove(System.Guid item)
+            {
+                return _internList.Remove(item.ToString("D"));
+            }
+
+            public int Count => _internList.Count;
+            
+            public bool IsReadOnly => _internList.IsReadOnly;
+            
+            public int IndexOf(System.Guid item)
+            {
+                return _internList.IndexOf(item.ToString("D"));
+            }
+
+            public void Insert(int index, System.Guid item)
+            {
+                _internList.Insert(index, item.ToString("D"));
+            }
+
+            public void RemoveAt(int index)
+            {
+                _internList.RemoveAt(index);
+            }
+
+            public System.Guid this[int index]
+            {
+                get =>  System.Guid.Parse(_internList[index]);
+                set => _internList[index] = value.ToString("D");
+            }
+        }
+        """;
 }

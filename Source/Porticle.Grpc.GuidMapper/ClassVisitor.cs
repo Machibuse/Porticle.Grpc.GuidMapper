@@ -9,26 +9,21 @@ public class ClassVisitor : CSharpSyntaxRewriter
     public override SyntaxNode? VisitClassDeclaration(ClassDeclarationSyntax node)
     {
         var marker = "[Porticle.Grpc.GuidMapper]";
-        
+
         if (node.GetLeadingTrivia().ToFullString().Contains(marker))
-        {
             // Skip if marker exists - class alreqady patched
             return node;
-        }
-        
+
         // Add marker
         var trivia = SyntaxFactory.TriviaList(SyntaxFactory.Comment("/// <remark>" + marker + "</remark>"), SyntaxFactory.LineFeed).AddRange(node.GetLeadingTrivia());
-        node = node.WithLeadingTrivia(trivia);        
-        
+        node = node.WithLeadingTrivia(trivia);
+
         var propertyVisitor = new PropertyVisitor();
         node = (ClassDeclarationSyntax)propertyVisitor.Visit(node);
 
-        if (propertyVisitor.NeedGuidConverter)
-        {
-            node = node.AddMembers(ClassFromSource(ListWrappers.RepeatedFieldGuidWrapper));
-        }
+        if (propertyVisitor.NeedGuidConverter) node = node.AddMembers(ClassFromSource(ListWrappers.RepeatedFieldGuidWrapper));
 
-        Console.WriteLine("Visit Methods for "+propertyVisitor.ReplaceProps.Count+" props");
+        Console.WriteLine("Visit Methods for " + propertyVisitor.ReplaceProps.Count + " props");
         var methodVisitor = new MethodVisitor(propertyVisitor.ReplaceProps);
         node = (ClassDeclarationSyntax)methodVisitor.Visit(node);
 

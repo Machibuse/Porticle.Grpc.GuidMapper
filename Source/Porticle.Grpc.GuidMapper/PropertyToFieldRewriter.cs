@@ -21,10 +21,7 @@ public class PropertyToFieldRewriter : CSharpSyntaxRewriter
     {
         var mapping = ReplaceNames.SingleOrDefault(field => field.PropertyName == node.Identifier.Text);
 
-        if (mapping != null)
-        {
-            return SyntaxFactory.IdentifierName(mapping.FieldName).WithTriviaFrom(node);
-        }
+        if (mapping != null) return SyntaxFactory.IdentifierName(mapping.FieldName).WithTriviaFrom(node);
 
         return base.VisitIdentifierName(node);
     }

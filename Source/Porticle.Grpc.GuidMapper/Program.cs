@@ -8,10 +8,7 @@ args = args.Where(s => s != "--").ToArray();
 if (args.Length != 1)
 {
     Console.WriteLine("Error: Expected exactly 1 arg but got " + args.Length);
-    foreach (var arg in args)
-    {
-        Console.WriteLine("Error: arg[..] '"+arg+"'");
-    }
+    foreach (var arg in args) Console.WriteLine("Error: arg[..] '" + arg + "'");
     return;
 }
 
@@ -26,7 +23,7 @@ if (string.IsNullOrWhiteSpace(basename))
 var directory = Path.GetDirectoryName(args[0])!;
 string[] filenames = [StringUtils.LowerUnderscoreToUpperCamelProtocWay(basename) + ".cs", StringUtils.LowerUnderscoreToUpperCamelGrpcWay(basename) + "Grpc.cs"];
 
-Console.WriteLine($"GRPC Post-processing for: {string.Join(", ",filenames)}");
+Console.WriteLine($"GRPC Post-processing for: {string.Join(", ", filenames)}");
 
 foreach (var filename in filenames)
 {

@@ -1,0 +1,15 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "Porticle.Grpc.UnitTests";
+import "google/protobuf/wrappers.proto";
+
+message FooBarMessage {
+  // [NullableEnum]
+  optional FooBar enum_optional = 7;
+}
+
+enum FooBar
+{
+  FOO = 0;
+  BAR = 1;
+}

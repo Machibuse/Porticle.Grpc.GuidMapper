@@ -9,8 +9,8 @@ public class PropertyVisitor : CSharpSyntaxRewriter
     public HashSet<PropertyToField> ReplaceProps = new();
 
     public bool NeedGuidConverter { get; set; }
-    
-    
+
+
     public override SyntaxNode? VisitPropertyDeclaration(PropertyDeclarationSyntax node)
     {
         var newProperty = CheckProperty(node);
@@ -22,22 +22,15 @@ public class PropertyVisitor : CSharpSyntaxRewriter
     {
         if (property.Type.ToString() == "string")
         {
-            if (property.GetLeadingTrivia().ToFullString().Contains("[GrpcGuid]"))
-            {
-                return ConvertToGuidProperty(property);
-            }
+            if (property.GetLeadingTrivia().ToFullString().Contains("[GrpcGuid]")) return ConvertToGuidProperty(property);
 
-            if (property.GetLeadingTrivia().ToFullString().Contains("[NullableString]"))
-            {
-                return ConvertToNullableStringProperty(property);
-            }
+            if (property.GetLeadingTrivia().ToFullString().Contains("[NullableString]")) return ConvertToNullableStringProperty(property);
 
             return null;
         }
-        
+
         if (property.Type.ToString() == "pbc::RepeatedField<string>")
         {
-            
             // Manipulate getter 
             var getter = property.AccessorList?.Accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.GetAccessorDeclaration));
 
@@ -60,18 +53,18 @@ public class PropertyVisitor : CSharpSyntaxRewriter
             var containingClass = property.Ancestors()
                 .OfType<ClassDeclarationSyntax>()
                 .FirstOrDefault();
-            
-            
+
+
             var matchingField = containingClass.CheckNotNull("Containing class not found").Members
                 .OfType<FieldDeclarationSyntax>()
                 .FirstOrDefault(field =>
-                    field.Declaration.Variables.Any(v => v.Identifier.Text == "_repeated_"+originalReturnExpression.ToFullString()+"codec")
+                    field.Declaration.Variables.Any(v => v.Identifier.Text == "_repeated_" + originalReturnExpression.ToFullString() + "codec")
                 );
 
-            bool isNullable = matchingField.CheckNotNull("Matching field not found").ToFullString().Contains("ForClassWrapper<string>");
-            
-            Console.WriteLine("isNullable "+isNullable+" "+property.Identifier.ToFullString());
-            
+            var isNullable = matchingField.CheckNotNull("Matching field not found").ToFullString().Contains("ForClassWrapper<string>");
+
+            Console.WriteLine("isNullable " + isNullable + " " + property.Identifier.ToFullString());
+
             if (property.GetLeadingTrivia().ToFullString().Contains("[GrpcGuid]"))
             {
                 if (isNullable)
@@ -93,46 +86,44 @@ public class PropertyVisitor : CSharpSyntaxRewriter
             }
 
             if (property.GetLeadingTrivia().ToFullString().Contains("[NullableString]"))
-            {
                 if (isNullable)
-                {
                     Console.WriteLine("Error: Nullable string is not supported for repeated fields because protoc don't allow null for lists");
-                }
-            }
-            
+
             return null;
         }
 
-        if (property.GetLeadingTrivia().ToFullString().Contains("[NullableEnum]"))
-        {
-            return ConvertOptionalToNullableEnum(property);
-        }
-        
-        
-        
+        if (property.GetLeadingTrivia().ToFullString().Contains("[NullableEnum]")) return ConvertOptionalToNullableEnum(property);
+
+
         // dont change anything
         return null;
     }
 
     private PropertyDeclarationSyntax? ConvertOptionalToNullableEnum(PropertyDeclarationSyntax property)
     {
-        var setter = property.GetSetter();
-        
         var getter = property.GetGetter();
-        
-        AssignmentExpressionSyntax[] assignment = setter.Body!.Statements
+
+        // Extract "EnumOptionalDefaultValue" from a line like this:
+        // get { if ((_hasBits0 & 1) != 0) { return enumOptional_; } else { return EnumOptionalDefaultValue; } }
+        var defaultValueExpression = getter.DescendantNodes().OfType<ReturnStatementSyntax>().Last().Expression.CheckNotNull("Default value not found");
+
+        var newGetter = getter.ReplaceNode(defaultValueExpression, SyntaxFactory.LiteralExpression(SyntaxKind.NullLiteralExpression));
+
+        property = property.ReplaceNode(getter, newGetter);
+
+
+        var setter = property.GetSetter();
+
+        var assignment = setter.Body!.Statements
             .OfType<ExpressionStatementSyntax>()
             .Select(s => (s.Expression as AssignmentExpressionSyntax)!)
             .ToArray();
 
-        if (assignment.Length != 2)
-        {
-            throw new TypeMapperException("Exactly 2 Assignment expressions expected in optional setter");
-        }
+        if (assignment.Length != 2) throw new TypeMapperException("Exactly 2 Assignment expressions expected in optional setter");
 
         var setBitAssignment = assignment[0];
-        var setValueAssignment = assignment[0];
-        
+        var setValueAssignment = assignment[1];
+
         // Erzeuge neuen Ausdruck: <setBitAssignment.left> &= ~<setBitAssignment.right>
         var deleteBitAssignment = SyntaxFactory.AssignmentExpression(
             SyntaxKind.AndAssignmentExpression,
@@ -143,12 +134,49 @@ public class PropertyVisitor : CSharpSyntaxRewriter
             )
         ).WithTriviaFrom(setBitAssignment);
 
-        string defaultValueIdentifierName = "DefaultValue";
+        // New assignment: enumOptional_ = <defaultValueIdentifierName>
+        var setDefaultValueAssignment = setValueAssignment.WithRight(defaultValueExpression);
 
-        // Erzeuge neue Zuweisung: enumOptional_ = <defaultValueIdentifierName>
-        var setDefaultValueAssignment = setValueAssignment.WithRight(SyntaxFactory.IdentifierName(defaultValueIdentifierName));        
 
-        return null;
+        setValueAssignment = setValueAssignment.WithRight(SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, setValueAssignment.Right, SyntaxFactory.IdentifierName("Value")));
+
+
+        var newSetter = SyntaxFactory.AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
+            .WithBody(SyntaxFactory.Block(
+                    SyntaxFactory.SingletonList<StatementSyntax>(
+                        SyntaxFactory.IfStatement(
+                                SyntaxFactory.BinaryExpression(
+                                    SyntaxKind.EqualsExpression,
+                                    SyntaxFactory.IdentifierName("value"),
+                                    SyntaxFactory.LiteralExpression(SyntaxKind.NullLiteralExpression)
+                                ),
+                                SyntaxFactory.Block(
+                                    new List<StatementSyntax>([
+                                        SyntaxFactory.ExpressionStatement(deleteBitAssignment.WithoutTrivia()),
+                                        SyntaxFactory.ExpressionStatement(setDefaultValueAssignment.WithoutTrivia())
+                                    ])
+                                )
+                            )
+                            .WithElse(SyntaxFactory.ElseClause(
+                                    SyntaxFactory.Block(
+                                        new List<StatementSyntax>
+                                        {
+                                            SyntaxFactory.ExpressionStatement(setBitAssignment.WithoutTrivia()),
+                                            SyntaxFactory.ExpressionStatement(setValueAssignment.WithoutTrivia())
+                                        })
+                                )
+                            ).WithLeadingTrivia(SyntaxFactory.Space).WithTrailingTrivia(SyntaxFactory.Space))
+                )
+            ).WithTriviaFrom(setter);
+
+
+        //ReplaceProps.Add(new PropertyToField(property.Identifier.ValueText, setValueAssignment.Left.WithoutTrivia().ToFullString()));
+        //ClearFunctions.Add(new ClearFunction("Clear" + property.Identifier.ValueText, SyntaxFactory.ExpressionStatement(setDefaultValueAssignment.WithoutTrivia())));
+        property = property.ReplaceNode(setter, newSetter);
+        property = property.ReplaceNode(setter, newSetter);
+        return property.ReplaceNode(setter, newSetter)
+            .ReplaceNode(getter, newGetter)
+            .WithType(SyntaxFactory.NullableType(property.Type.WithoutTrivia()).WithTriviaFrom(property.Type));
     }
 
     private PropertyDeclarationSyntax? ConvertToNullableStringProperty(PropertyDeclarationSyntax property)
@@ -168,7 +196,7 @@ public class PropertyVisitor : CSharpSyntaxRewriter
             Console.WriteLine($"[Error] String property {property.Identifier} ist not nullable");
             return null;
         }
-        
+
         var enableDirective = SyntaxFactory.Trivia(SyntaxFactory.NullableDirectiveTrivia(SyntaxFactory.Token(SyntaxKind.EnableKeyword).WithLeadingTrivia(SyntaxFactory.Space), true));
         var disableDirective = SyntaxFactory.Trivia(SyntaxFactory.NullableDirectiveTrivia(SyntaxFactory.Token(SyntaxKind.DisableKeyword).WithLeadingTrivia(SyntaxFactory.Space), true));
 
@@ -178,7 +206,7 @@ public class PropertyVisitor : CSharpSyntaxRewriter
         return property
             .WithType(SyntaxFactory.ParseTypeName("string?").WithTrailingTrivia(SyntaxFactory.ElasticSpace))
             .WithLeadingTrivia(leadingTrivia.AddRange(property.GetLeadingTrivia()))
-            .WithTrailingTrivia(property.GetTrailingTrivia().AddRange(trailingTrivia));        
+            .WithTrailingTrivia(property.GetTrailingTrivia().AddRange(trailingTrivia));
     }
 
     private PropertyDeclarationSyntax? ConvertToGuidProperty(PropertyDeclarationSyntax property)
@@ -201,9 +229,7 @@ public class PropertyVisitor : CSharpSyntaxRewriter
         if (!isNullable)
         {
             if (originalRightHandSide is not InvocationExpressionSyntax invocationExpr || !invocationExpr.Expression.ToString().EndsWith("CheckNotNull"))
-            {
                 throw new TypeMapperException($"[Error] Can't find CheckNotNull call in setter od property {property.Identifier}");
-            }
 
             originalRightHandSide = invocationExpr.ArgumentList.Arguments.First().Expression;
         }
@@ -289,12 +315,9 @@ public class PropertyVisitor : CSharpSyntaxRewriter
             .OfType<ExpressionStatementSyntax>()
             .Select(s => s.Expression as AssignmentExpressionSyntax)
             .FirstOrDefault();
-        
-        if (assignment == null)
-        {
-            throw new TypeMapperException($"Setter has no valid assignment expression");
-        }
-        
+
+        if (assignment == null) throw new TypeMapperException($"Setter has no valid assignment expression");
+
         return assignment;
     }
 }

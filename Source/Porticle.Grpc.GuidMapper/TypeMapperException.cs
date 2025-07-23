@@ -1,6 +1,5 @@
 ﻿namespace Porticle.Grpc.GuidMapper;
 
-
 public class TypeMapperException : Exception
 {
     public TypeMapperException()
