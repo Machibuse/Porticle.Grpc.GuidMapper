@@ -2,10 +2,21 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Porticle.Grpc.GuidMapper;
+namespace Porticle.Grpc.TypeMapper;
 
 public class MethodVisitor : CSharpSyntaxRewriter
 {
+    private static readonly string[] ReplaceMethods =
+    [
+        "Equals",
+        "GetHashCode",
+        "WriteTo",
+        "InternalWriteTo",
+        "CalculateSize",
+        "MergeFrom",
+        "InternalMergeFrom"
+    ];
+
     public MethodVisitor(HashSet<PropertyToField> replaceProps)
     {
         ReplaceProps = replaceProps;
@@ -15,6 +26,8 @@ public class MethodVisitor : CSharpSyntaxRewriter
 
     public override SyntaxNode? VisitMethodDeclaration(MethodDeclarationSyntax node)
     {
+        if (!ReplaceMethods.Contains(node.Identifier.ValueText.Trim())) return base.VisitMethodDeclaration(node);
+
         var propertyToFieldRewriter = new PropertyToFieldRewriter(ReplaceProps);
 
         var newBody = (BlockSyntax?)propertyToFieldRewriter.Visit(node.Body);

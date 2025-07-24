@@ -1,8 +1,8 @@
 ﻿using System.Text;
 
-namespace Porticle.Grpc.GuidMapper;
+namespace Porticle.Grpc.TypeMapper;
 
-internal class StringUtils
+internal static class StringUtils
 {
     // This is how the protoc codegen constructs its output filename.
 // See protobuf/compiler/csharp/csharp_helpers.cc:137.

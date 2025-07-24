@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Title>Porticle.Grpc.TypeMapper</Title>
+        <Authors>Carsten Jendro</Authors>
+        <Description>Roslin postprocessor to map GRPC properties to strings to Guids or nullable enums</Description>
+        <Copyright>Carsten Jendro</Copyright>
+        <PackageProjectUrl>https://github.com/Machibuse/Porticle.Grpc.TypeMapper</PackageProjectUrl>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageIcon>pinky32.png</PackageIcon>
+        <RepositoryUrl>https://github.com/Machibuse/Porticle.Grpc.TypeMapper.git</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageReleaseNotes></PackageReleaseNotes>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <DevelopmentDependency>true</DevelopmentDependency>
+        <Version>1.0.26</Version>
+        <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+        <TargetFrameworks>net9.0;net8.0</TargetFrameworks>
+        <PackageReadmeFile>readme.md</PackageReadmeFile>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <WarningsAsErrors>NU1605</WarningsAsErrors>
+        <NoWarn>1701;1702;NU5119</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="pinky32.png" Pack="True" PackagePath="/"/>
+    </ItemGroup>
+
+
+    <ItemGroup>
+        <None Include="..\..\readme.md" Pack="true" PackagePath="\"/>
+        <None Include="Porticle.Grpc.TypeMapper.targets" Pack="true" PackagePath="buildTransitive"/>
+        <None Include="$(OutputPath)**\*" Pack="true" PackagePath="tools\$(TargetFramework)\"/>
+    </ItemGroup>
+</Project>

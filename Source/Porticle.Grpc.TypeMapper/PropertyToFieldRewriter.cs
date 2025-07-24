@@ -2,7 +2,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Porticle.Grpc.GuidMapper;
+namespace Porticle.Grpc.TypeMapper;
 
 /// <summary>
 ///     Ein spezialisierter Rewriter, der alle Vorkommen eines bestimmten
@@ -21,11 +21,7 @@ public class PropertyToFieldRewriter : CSharpSyntaxRewriter
     {
         var mapping = ReplaceNames.SingleOrDefault(field => field.PropertyName == node.Identifier.Text);
 
-        if (mapping != null)
-        {
-            Console.WriteLine($"[Info] Replace {mapping.PropertyName} with {mapping.FieldName}");
-            return SyntaxFactory.IdentifierName(mapping.FieldName).WithTriviaFrom(node);
-        }
+        if (mapping != null) return SyntaxFactory.IdentifierName(mapping.FieldName).WithTriviaFrom(node);
 
         return base.VisitIdentifierName(node);
     }

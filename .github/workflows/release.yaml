@@ -30,8 +30,11 @@ jobs:
       - name: Build project
         run: dotnet build Source/Porticle.Grpc.sln --configuration Release --no-restore
 
+      - name: Run tests
+        run: dotnet test Source/Porticle.Grpc.UnitTests/Porticle.Grpc.UnitTests.csproj --configuration Release --no-build --verbosity normal
+
       - name: Pack NuGet package
-        run: dotnet pack Source/Porticle.Grpc.GuidMapper/Porticle.Grpc.GuidMapper.csproj --configuration Release --no-build --output ./nuget --property:PackageVersion=${{ env.VERSION }}
+        run: dotnet pack Source/Porticle.Grpc.TypeMapper/Porticle.Grpc.TypeMapper.csproj --configuration Release --no-build --output ./nuget --property:PackageVersion=${{ env.VERSION }}
 
       - name: Publish NuGet package
         run: dotnet nuget push ./nuget/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
@@ -41,7 +44,7 @@ jobs:
         with:
           tag_name: v${{ env.VERSION }}
           name: Release v${{ env.VERSION }}
-          body: "Nuget Release für Porticle.Grpc.GuidMapper v${{ env.VERSION }}."
+          body: "Nuget Release für Porticle.Grpc.TypeMapper v${{ env.VERSION }}."
           files: ./nuget/*.nupkg
           draft: false
           prerelease: ${{ contains(env.VERSION, '-beta') || contains(env.VERSION, '-alpha') || contains(env.VERSION, '-rc') }}

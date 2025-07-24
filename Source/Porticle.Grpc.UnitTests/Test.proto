@@ -1,0 +1,53 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "Porticle.Grpc.UnitTests";
+
+import "google/protobuf/wrappers.proto";
+
+
+message TestMessage {
+  string single_guid = 1;
+  google.protobuf.StringValue single_nullable_guid = 2;
+  google.protobuf.StringValue single_nullable_string = 4;
+  repeated string list_of_guid = 5;
+}
+
+message TestMessageMapped {
+  // [GrpcGuid]
+  string single_guid = 1;
+
+  // [GrpcGuid]
+  google.protobuf.StringValue single_nullable_guid = 2;
+
+  // [NullableString]
+  google.protobuf.StringValue single_nullable_string = 4;
+
+  // [GrpcGuid]
+  repeated string list_of_guid = 5;
+
+  TestEnum enum_required = 6;
+
+  // [NullableEnum]
+  optional TestEnum enum_optional = 7;
+}
+
+message TestMessageEnum1 {
+  optional TestEnum enum_optional = 7;
+}
+message TestMessageEnum2 {
+  // [NullableEnum]
+  optional TestEnum enum_optional = 7;
+}
+
+
+message TestMessageEnum3 {
+  
+  optional TestEnum foo_bar = 7;
+}
+
+
+enum TestEnum
+{
+  FOO = 0;
+  BAR = 1;
+}
