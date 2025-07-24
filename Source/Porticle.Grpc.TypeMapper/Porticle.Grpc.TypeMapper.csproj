@@ -16,7 +16,7 @@
         <PackageReleaseNotes></PackageReleaseNotes>
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <DevelopmentDependency>true</DevelopmentDependency>
-        <Version>1.0.26</Version>
+        <Version>1.3.0</Version>
         <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
         <TargetFrameworks>net9.0;net8.0</TargetFrameworks>
         <PackageReadmeFile>readme.md</PackageReadmeFile>
