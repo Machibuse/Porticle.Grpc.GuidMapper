@@ -15,7 +15,7 @@ public class ClassVisitor : CSharpSyntaxRewriter
             return node;
 
         // Add marker
-        var trivia = SyntaxFactory.TriviaList(SyntaxFactory.Comment("/// <remark>" + marker + "</remark>"), SyntaxFactory.LineFeed).AddRange(node.GetLeadingTrivia());
+        var trivia = node.GetLeadingTrivia().Add(SyntaxFactory.Comment("/// <remark>" + marker + "</remark>")).Add(SyntaxFactory.CarriageReturnLineFeed);
         node = node.WithLeadingTrivia(trivia);
 
         var propertyVisitor = new PropertyVisitor();

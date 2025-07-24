@@ -31,6 +31,9 @@ message TestMessageMapped {
   optional TestEnum enum_optional = 7;
 }
 
+//////////////////////////////////////////////
+// Test comment to check marker comment 
+//////////////////////////////////////////////
 message TestMessageEnum1 {
   optional TestEnum enum_optional = 7;
 }
