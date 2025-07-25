@@ -1,9 +1,9 @@
 <Project>
     <Target Name="RunProtoPostProcessing" AfterTargets="Protobuf_Compile">
         <ItemGroup>
-            <_FilesToPostProcess Include="$(MSBuildProjectDirectory)\%(Protobuf_Compile.OutputDir)\%(Protobuf_Compile.Filename)"/>
+            <_FilesToPostProcess Include="$(MSBuildProjectDirectory)/%(Protobuf_Compile.OutputDir)/%(Protobuf_Compile.Filename)"/>
         </ItemGroup>
         <Message Text="Proto Postprocessing" Importance="high"/>
-        <Exec Command="dotnet &quot;$(MSBuildThisFileDirectory)..\tools\$(TargetFramework)\Porticle.Grpc.TypeMapper.dll&quot; -- %(_FilesToPostProcess.Identity)" Condition="'@(_FilesToPostProcess)' != ''"/>
+        <Exec Command="dotnet &quot;$(MSBuildThisFileDirectory)../tools/$(TargetFramework)/Porticle.Grpc.TypeMapper.dll&quot; -- %(_FilesToPostProcess.Identity)" Condition="'@(_FilesToPostProcess)' != ''"/>
     </Target>
 </Project>
