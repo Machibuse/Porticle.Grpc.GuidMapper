@@ -6,11 +6,11 @@ your `.proto` file.
 
 ## Build State
 
-[![Build and Release](https://github.com/Machibuse/Porticle.Grpc.TypeMapper/actions/workflows/release.yaml/badge.svg)](https://github.com/Machibuse/Porticle.CLDR/actions/workflows/release.yaml)
+[![Build and Release](https://github.com/Machibuse/Porticle.Grpc.TypeMapper/actions/workflows/release.yaml/badge.svg)](https://github.com/Machibuse/Porticle.Grpc.TypeMapper/actions/workflows/release.yaml)
 
 ## Nuget
 
-[![NuGet Latest Version](https://img.shields.io/nuget/v/Porticle.Grpc.TypeMapper.svg)](https://www.nuget.org/packages/Porticle.Grpc.TypeMapper/)  [![NuGet Downloads](https://img.shields.io/nuget/dt/Porticle.Grpc.TypeMapper.svg)](https://www.nuget.org/packages/Porticle.CLDR.Units/)
+[![NuGet Latest Version](https://img.shields.io/nuget/v/Porticle.Grpc.TypeMapper.svg)](https://www.nuget.org/packages/Porticle.Grpc.TypeMapper/)  [![NuGet Downloads](https://img.shields.io/nuget/dt/Porticle.Grpc.TypeMapper.svg)](https://www.nuget.org/packages/Porticle.Grpc.TypeMapper/)
 
 ## Overview
 
