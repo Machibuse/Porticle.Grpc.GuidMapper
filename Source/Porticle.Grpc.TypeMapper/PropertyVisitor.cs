@@ -63,13 +63,11 @@ public class PropertyVisitor : CSharpSyntaxRewriter
 
             var isNullable = matchingField.CheckNotNull("Matching field not found").ToFullString().Contains("ForClassWrapper<string>");
 
-            Console.WriteLine("isNullable " + isNullable + " " + property.Identifier.ToFullString());
-
             if (property.GetLeadingTrivia().ToFullString().Contains("[GrpcGuid]"))
             {
                 if (isNullable)
                 {
-                    Console.WriteLine("Error: Nullable Guid is not supported for repeated fields because protoc don't allow null for lists");
+                    Console.WriteLine("[Error] Nullable Guid is not supported for repeated fields because protoc don't allow null for lists");
                 }
                 else
                 {
@@ -87,7 +85,7 @@ public class PropertyVisitor : CSharpSyntaxRewriter
 
             if (property.GetLeadingTrivia().ToFullString().Contains("[NullableString]"))
                 if (isNullable)
-                    Console.WriteLine("Error: Nullable string is not supported for repeated fields because protoc don't allow null for lists");
+                    Console.WriteLine("[Error] Nullable string is not supported for repeated fields because protoc don't allow null for lists");
 
             return null;
         }

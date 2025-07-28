@@ -23,7 +23,6 @@ public class ClassVisitor : CSharpSyntaxRewriter
 
         if (propertyVisitor.NeedGuidConverter) node = node.AddMembers(ClassFromSource(ListWrappers.RepeatedFieldGuidWrapper));
 
-        Console.WriteLine("Visit Methods for " + propertyVisitor.ReplaceProps.Count + " props");
         var methodVisitor = new MethodVisitor(propertyVisitor.ReplaceProps);
         node = (ClassDeclarationSyntax)methodVisitor.Visit(node);
 

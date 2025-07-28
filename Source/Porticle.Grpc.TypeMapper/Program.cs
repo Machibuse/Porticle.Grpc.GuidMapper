@@ -7,8 +7,8 @@ args = args.Where(s => s != "--").ToArray();
 // Akzeptiert den Dateipfad als Argument
 if (args.Length != 1)
 {
-    Console.WriteLine("Error: Expected exactly 1 arg but got " + args.Length);
-    foreach (var arg in args) Console.WriteLine("Error: arg[..] '" + arg + "'");
+    Console.WriteLine("[Error] Expected exactly 1 arg but got " + args.Length);
+    foreach (var arg in args) Console.WriteLine("[Error] arg[..] '" + arg + "'");
     return;
 }
 
@@ -16,7 +16,7 @@ var basename = Path.GetFileNameWithoutExtension(args[0]);
 
 if (string.IsNullOrWhiteSpace(basename))
 {
-    Console.WriteLine("Warning: Nothing to preprocess - no filename given");
+    Console.WriteLine("[Warning] Nothing to preprocess - no filename given");
     return;
 }
 
