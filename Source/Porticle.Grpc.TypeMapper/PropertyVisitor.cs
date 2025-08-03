@@ -1,10 +1,11 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Microsoft.Build.Utilities;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Porticle.Grpc.TypeMapper;
 
-public class PropertyVisitor : CSharpSyntaxRewriter
+public class PropertyVisitor(TaskLoggingHelper log) : CSharpSyntaxRewriter
 {
     public HashSet<PropertyToField> ReplaceProps = new();
 
@@ -36,7 +37,7 @@ public class PropertyVisitor : CSharpSyntaxRewriter
 
             if (getter?.Body == null)
             {
-                Console.WriteLine($"[Error] No getter found in property {property.Identifier}");
+                log.LogError($"[Error] No getter found in property {property.Identifier}");
                 return null;
             }
 
@@ -44,7 +45,7 @@ public class PropertyVisitor : CSharpSyntaxRewriter
 
             if (returnStatement?.Expression == null)
             {
-                Console.WriteLine($"[Error] Getter has no valid return statement in property {property.Identifier}");
+                log.LogError($"Getter has no valid return statement in property {property.Identifier}");
                 return null;
             }
 
@@ -67,7 +68,7 @@ public class PropertyVisitor : CSharpSyntaxRewriter
             {
                 if (isNullable)
                 {
-                    Console.WriteLine("[Error] Nullable Guid is not supported for repeated fields because protoc don't allow null for lists");
+                    log.LogError("Nullable Guid is not supported for repeated fields because protoc don't allow null for lists");
                 }
                 else
                 {
@@ -85,7 +86,7 @@ public class PropertyVisitor : CSharpSyntaxRewriter
 
             if (property.GetLeadingTrivia().ToFullString().Contains("[NullableString]"))
                 if (isNullable)
-                    Console.WriteLine("[Error] Nullable string is not supported for repeated fields because protoc don't allow null for lists");
+                    log.LogError("Nullable string is not supported for repeated fields because protoc don't allow null for lists");
 
             return null;
         }
@@ -185,7 +186,7 @@ public class PropertyVisitor : CSharpSyntaxRewriter
 
         if (setter?.Body == null)
         {
-            Console.WriteLine($"[Error] No setter found in property {property.Identifier}");
+            log.LogError($"No setter found in property {property.Identifier}");
             return null;
         }
 
@@ -193,7 +194,7 @@ public class PropertyVisitor : CSharpSyntaxRewriter
 
         if (!isNullable)
         {
-            Console.WriteLine($"[Error] String property {property.Identifier} ist not nullable");
+            log.LogError($"String property {property.Identifier} ist not nullable");
             return null;
         }
 
@@ -217,7 +218,7 @@ public class PropertyVisitor : CSharpSyntaxRewriter
 
         if (setter.Body == null)
         {
-            Console.WriteLine($"[Error] No setter found in property {property.Identifier}");
+            log.LogError($"No setter found in property {property.Identifier}");
             return null;
         }
 
@@ -256,7 +257,7 @@ public class PropertyVisitor : CSharpSyntaxRewriter
 
         if (getter?.Body == null)
         {
-            Console.WriteLine($"[Error] No getter found in property {property.Identifier}");
+            log.LogError($"No getter found in property {property.Identifier}");
             return null;
         }
 
@@ -264,7 +265,7 @@ public class PropertyVisitor : CSharpSyntaxRewriter
 
         if (returnStatement?.Expression == null)
         {
-            Console.WriteLine($"[Error] Getter has no valid return statement in property {property.Identifier}");
+            log.LogError($"Getter has no valid return statement in property {property.Identifier}");
             return null;
         }
 
@@ -272,7 +273,7 @@ public class PropertyVisitor : CSharpSyntaxRewriter
 
         if (originalReturnExpression is not IdentifierNameSyntax identifierNameSyntax)
         {
-            Console.WriteLine($"[Error] Getter return statement should be a simple identifier in property {property.Identifier}");
+            log.LogError($"Getter return statement should be a simple identifier in property {property.Identifier}");
             return null;
         }
 

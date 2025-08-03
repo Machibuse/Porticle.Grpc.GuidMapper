@@ -1,10 +1,11 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Microsoft.Build.Utilities;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Porticle.Grpc.TypeMapper;
 
-public class ClassVisitor : CSharpSyntaxRewriter
+public class ClassVisitor(TaskLoggingHelper log) : CSharpSyntaxRewriter
 {
     public override SyntaxNode? VisitClassDeclaration(ClassDeclarationSyntax node)
     {
@@ -18,7 +19,7 @@ public class ClassVisitor : CSharpSyntaxRewriter
         var trivia = node.GetLeadingTrivia().Add(SyntaxFactory.Comment("/// <remark>" + marker + "</remark>")).Add(SyntaxFactory.CarriageReturnLineFeed);
         node = node.WithLeadingTrivia(trivia);
 
-        var propertyVisitor = new PropertyVisitor();
+        var propertyVisitor = new PropertyVisitor(log);
         node = (ClassDeclarationSyntax)propertyVisitor.Visit(node);
 
         if (propertyVisitor.NeedGuidConverter) node = node.AddMembers(ClassFromSource(ListWrappers.RepeatedFieldGuidWrapper));

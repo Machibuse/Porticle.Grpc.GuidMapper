@@ -30,11 +30,17 @@
         <ProjectReference Include="..\Porticle.Grpc.TypeMapper\Porticle.Grpc.TypeMapper.csproj"/>
     </ItemGroup>
 
+    <UsingTask TaskName="Porticle.Grpc.TypeMapper.ProtoPostProcessor"
+               AssemblyFile="$(MSBuildProjectDirectory)\..\Porticle.Grpc.TypeMapper\bin\$(Configuration)\$(TargetFramework)\Porticle.Grpc.TypeMapper.dll"/>
+
     <Target Name="RunProtoPostProcessing" AfterTargets="Protobuf_Compile">
         <ItemGroup>
             <_FilesToPostProcess Include="$(MSBuildProjectDirectory)\%(Protobuf_Compile.OutputDir)\%(Protobuf_Compile.Filename)"/>
         </ItemGroup>
-        <Message Text="Proto Postprocessing" Importance="high"/>
-        <Exec Command="dotnet &quot;$(MSBuildProjectDirectory)/../Porticle.Grpc.TypeMapper/bin/$(Configuration)/$(TargetFramework)/Porticle.Grpc.TypeMapper.dll&quot; -- %(_FilesToPostProcess.Identity)" Condition="'@(_FilesToPostProcess)' != ''"/>
+        <ProtoPostProcessor
+                FilesToPostProcess="@(_FilesToPostProcess)"
+                WrapAllNonNullableStrings="$(PorticleGrpcTypeMapper_WrapAllNonNullableStrings)"
+                WrapAllNullableStringValues="$(PorticleGrpcTypeMapper_WrapAllNullableStringValues)"
+                Condition="'@(_FilesToPostProcess)' != ''"/>
     </Target>
 </Project>
