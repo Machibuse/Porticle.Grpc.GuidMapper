@@ -1,9 +1,17 @@
 <Project>
+    <!-- Importiere den Task aus der DLL im NuGet-Paket -->
+    <UsingTask
+            TaskName="Porticle.Grpc.ProtoPostProcessor"
+            AssemblyFile="$(MSBuildThisFileDirectory)../tools/$(TargetFramework)/Porticle.Grpc.TypeMapper.dll"/>
+
     <Target Name="RunProtoPostProcessing" AfterTargets="Protobuf_Compile">
         <ItemGroup>
             <_FilesToPostProcess Include="$(MSBuildProjectDirectory)/%(Protobuf_Compile.OutputDir)/%(Protobuf_Compile.Filename)"/>
         </ItemGroup>
-        <Message Text="Proto Postprocessing" Importance="high"/>
-        <Exec Command="dotnet &quot;$(MSBuildThisFileDirectory)../tools/$(TargetFramework)/Porticle.Grpc.TypeMapper.dll&quot; -- %(_FilesToPostProcess.Identity)" Condition="'@(_FilesToPostProcess)' != ''"/>
+        <ProtoPostProcessor
+                FilesToPostProcess="@(_FilesToPostProcess)"
+                WrapAllNonNullableStrings="$(PorticleGrpcTypeMapper_WrapAllNonNullableStrings)"
+                WrapAllNullableStringValues="$(PorticleGrpcTypeMapper_WrapAllNullableStringValues)"
+                Condition="'@(_FilesToPostProcess)' != ''"/>
     </Target>
 </Project>
