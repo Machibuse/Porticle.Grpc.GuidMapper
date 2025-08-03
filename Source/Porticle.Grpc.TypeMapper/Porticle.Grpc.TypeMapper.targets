@@ -1,9 +1,5 @@
 <Project>
-    <!-- Importiere den Task aus der DLL im NuGet-Paket -->
-    <UsingTask
-            TaskName="Porticle.Grpc.ProtoPostProcessor"
-            AssemblyFile="$(MSBuildThisFileDirectory)../tools/$(TargetFramework)/Porticle.Grpc.TypeMapper.dll"/>
-
+    <UsingTask TaskName="Porticle.Grpc.TypeMapper.ProtoPostProcessor" AssemblyFile="$(MSBuildThisFileDirectory)../tools/$(TargetFramework)/Porticle.Grpc.TypeMapper.dll"/>
     <Target Name="RunProtoPostProcessing" AfterTargets="Protobuf_Compile">
         <ItemGroup>
             <_FilesToPostProcess Include="$(MSBuildProjectDirectory)/%(Protobuf_Compile.OutputDir)/%(Protobuf_Compile.Filename)"/>
