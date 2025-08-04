@@ -8,6 +8,6 @@
                 FilesToPostProcess="@(_FilesToPostProcess)"
                 WrapAllNonNullableStrings="$(PorticleGrpcTypeMapper_WrapAllNonNullableStrings)"
                 WrapAllNullableStringValues="$(PorticleGrpcTypeMapper_WrapAllNullableStringValues)"
-                Condition="'@(_FilesToPostProcess)' != ''"/>
+                Condition="'@(Protobuf_Compile->Count())' != '0'"/>
     </Target>
 </Project>

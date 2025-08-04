@@ -4,6 +4,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Porticle.Grpc.TypeMapper", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Porticle.Grpc.UnitTests", "Porticle.Grpc.UnitTests\Porticle.Grpc.UnitTests.csproj", "{13375C13-0624-4441-A6D5-4F501C07CAD4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Porticle.Grpc.Test", "Porticle.Grpc.Test\Porticle.Grpc.Test.csproj", "{7C8C7672-2EAD-4793-8F54-8ED0E6197C19}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Porticle.Grpc.TestWithoutProto", "Porticle.Grpc.TestWithoutProto\Porticle.Grpc.TestWithoutProto.csproj", "{492D2C7B-3D6A-4CF7-9990-658E5776ACB2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +22,13 @@ Global
 		{13375C13-0624-4441-A6D5-4F501C07CAD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{13375C13-0624-4441-A6D5-4F501C07CAD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{13375C13-0624-4441-A6D5-4F501C07CAD4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C8C7672-2EAD-4793-8F54-8ED0E6197C19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C8C7672-2EAD-4793-8F54-8ED0E6197C19}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C8C7672-2EAD-4793-8F54-8ED0E6197C19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C8C7672-2EAD-4793-8F54-8ED0E6197C19}.Release|Any CPU.Build.0 = Release|Any CPU
+		{492D2C7B-3D6A-4CF7-9990-658E5776ACB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{492D2C7B-3D6A-4CF7-9990-658E5776ACB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{492D2C7B-3D6A-4CF7-9990-658E5776ACB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{492D2C7B-3D6A-4CF7-9990-658E5776ACB2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

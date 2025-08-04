@@ -316,7 +316,7 @@ public class PropertyVisitor(TaskLoggingHelper log) : CSharpSyntaxRewriter
 
     private static AssignmentExpressionSyntax GetAssignmentExpression(AccessorDeclarationSyntax setter)
     {
-        var assignment = setter.Body.Statements
+        var assignment = setter.Body!.Statements
             .OfType<ExpressionStatementSyntax>()
             .Select(s => s.Expression as AssignmentExpressionSyntax)
             .FirstOrDefault();
