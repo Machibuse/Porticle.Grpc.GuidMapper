@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Porticle.Grpc.TypeMapper;
 
-public class ClassVisitor(TaskLoggingHelper log) : CSharpSyntaxRewriter
+public class ClassVisitor(TaskLoggingHelper log, bool wrapAllNonNullableStrings, bool wrapAllNullableStringValues) : CSharpSyntaxRewriter
 {
     public override SyntaxNode? VisitClassDeclaration(ClassDeclarationSyntax node)
     {
@@ -19,7 +19,7 @@ public class ClassVisitor(TaskLoggingHelper log) : CSharpSyntaxRewriter
         var trivia = node.GetLeadingTrivia().Add(SyntaxFactory.Comment("/// <remark>" + marker + "</remark>")).Add(SyntaxFactory.CarriageReturnLineFeed);
         node = node.WithLeadingTrivia(trivia);
 
-        var propertyVisitor = new PropertyVisitor(log);
+        var propertyVisitor = new PropertyVisitor(log, wrapAllNonNullableStrings, wrapAllNullableStringValues);
         node = (ClassDeclarationSyntax)propertyVisitor.Visit(node);
 
         if (propertyVisitor.NeedGuidConverter) node = node.AddMembers(ClassFromSource(ListWrappers.RepeatedFieldGuidWrapper));

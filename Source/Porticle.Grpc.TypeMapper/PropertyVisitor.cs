@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Porticle.Grpc.TypeMapper;
 
-public class PropertyVisitor(TaskLoggingHelper log) : CSharpSyntaxRewriter
+public class PropertyVisitor(TaskLoggingHelper log, bool wrapAllNonNullableStrings, bool wrapAllNullableStringValues) : CSharpSyntaxRewriter
 {
     public HashSet<PropertyToField> ReplaceProps = new();
 
@@ -25,7 +25,10 @@ public class PropertyVisitor(TaskLoggingHelper log) : CSharpSyntaxRewriter
         {
             if (property.GetLeadingTrivia().ToFullString().Contains("[GrpcGuid]")) return ConvertToGuidProperty(property);
 
-            if (property.GetLeadingTrivia().ToFullString().Contains("[NullableString]")) return ConvertToNullableStringProperty(property);
+            if (wrapAllNullableStringValues || property.GetLeadingTrivia().ToFullString().Contains("[NullableString]"))
+                return ConvertToNullableStringProperty(property, wrapAllNullableStringValues);
+
+            if (wrapAllNonNullableStrings) return ConvertToNonNullableStringProperty(property);
 
             return null;
         }
@@ -180,13 +183,14 @@ public class PropertyVisitor(TaskLoggingHelper log) : CSharpSyntaxRewriter
             .WithType(SyntaxFactory.NullableType(property.Type.WithoutTrivia()).WithTriviaFrom(property.Type));
     }
 
-    private PropertyDeclarationSyntax? ConvertToNullableStringProperty(PropertyDeclarationSyntax property)
+    private PropertyDeclarationSyntax? ConvertToNullableStringProperty(PropertyDeclarationSyntax property, bool wrapAllNullableStringValues)
     {
         var setter = property.AccessorList?.Accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.SetAccessorDeclaration));
 
         if (setter?.Body == null)
         {
-            log.LogError($"No setter found in property {property.Identifier}");
+            if (!wrapAllNullableStringValues) log.LogError($"No setter found in property {property.Identifier}");
+
             return null;
         }
 
@@ -194,7 +198,8 @@ public class PropertyVisitor(TaskLoggingHelper log) : CSharpSyntaxRewriter
 
         if (!isNullable)
         {
-            log.LogError($"String property {property.Identifier} ist not nullable");
+            if (!wrapAllNullableStringValues) log.LogError($"String property {property.Identifier} ist not nullable");
+
             return null;
         }
 
@@ -208,6 +213,29 @@ public class PropertyVisitor(TaskLoggingHelper log) : CSharpSyntaxRewriter
 
         return property
             .WithType(SyntaxFactory.ParseTypeName("string?").WithTrailingTrivia(SyntaxFactory.ElasticSpace))
+            .WithLeadingTrivia(leadingTrivia.AddRange(property.GetLeadingTrivia()))
+            .WithTrailingTrivia(property.GetTrailingTrivia().AddRange(trailingTrivia));
+    }
+
+    private PropertyDeclarationSyntax? ConvertToNonNullableStringProperty(PropertyDeclarationSyntax property)
+    {
+        var setter = property.AccessorList?.Accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.SetAccessorDeclaration));
+
+        if (setter?.Body == null) return null;
+
+        var isNullable = !setter.Body.ToFullString().Contains("ProtoPreconditions.CheckNotNull");
+
+        if (isNullable) return null;
+
+        var enableDirective =
+            SyntaxFactory.Trivia(SyntaxFactory.NullableDirectiveTrivia(SyntaxFactory.Token(SyntaxKind.EnableKeyword).WithLeadingTrivia(SyntaxFactory.Space), true));
+        var disableDirective =
+            SyntaxFactory.Trivia(SyntaxFactory.NullableDirectiveTrivia(SyntaxFactory.Token(SyntaxKind.DisableKeyword).WithLeadingTrivia(SyntaxFactory.Space), true));
+
+        var leadingTrivia = SyntaxFactory.TriviaList(enableDirective, SyntaxFactory.ElasticCarriageReturnLineFeed);
+        var trailingTrivia = SyntaxFactory.TriviaList(SyntaxFactory.ElasticCarriageReturnLineFeed, disableDirective);
+
+        return property
             .WithLeadingTrivia(leadingTrivia.AddRange(property.GetLeadingTrivia()))
             .WithTrailingTrivia(property.GetTrailingTrivia().AddRange(trailingTrivia));
     }

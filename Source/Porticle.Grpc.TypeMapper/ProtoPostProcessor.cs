@@ -48,7 +48,7 @@ public class ProtoPostProcessor : Task
                 var root = tree.GetRoot();
                 File.WriteAllText(filePath + "_", root.ToFullString());
 
-                var classVisitor = new ClassVisitor(Log);
+                var classVisitor = new ClassVisitor(Log, WrapAllNonNullableStrings, WrapAllNullableStringValues);
                 root = classVisitor.Visit(root);
 
                 File.WriteAllText(filePath, root.ToFullString());
